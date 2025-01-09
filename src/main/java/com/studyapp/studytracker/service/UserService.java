@@ -3,35 +3,60 @@ package com.studyapp.studytracker.service;
 import com.studyapp.studytracker.exception.CustomException;
 import com.studyapp.studytracker.model.User;
 import com.studyapp.studytracker.repository.UserRepository;
-import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
 
 @Service
 public class UserService {
 
-    // Injetando o repositório de usuários
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    // Construtor para injeção de dependências
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
+        this.passwordEncoder = new BCryptPasswordEncoder(); // Encoder para hashear senhas
     }
 
     /**
-     * Método para criar um novo usuário
-     *
-     * @param user Objeto User contendo os dados do novo usuário
-     * @return O usuário salvo no banco de dados
-     * @throws CustomException Se o email já estiver em uso
+     * Criar um novo usuário (com hashing de senha).
      */
     public User createUser(User user) {
-        // Verifica se o email já existe no banco de dados
+        // Verifica se o email já existe no banco
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new CustomException("Email já está em uso!", "USER_EMAIL_ALREADY_EXISTS");
         }
-        // Salva o usuário no banco de dados
+
+        // Hashear a senha antes de salvar
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
+    }
+
+    /**
+     * Autenticar usuário pelo email e senha.
+     *
+     * @param email    Email do usuário.
+     * @param password Senha do usuário.
+     * @return Token ou mensagem de erro.
+     */
+    public User login(String email, String password) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            // Verificar se a senha está correta
+            if (passwordEncoder.matches(password, user.getPassword())) {
+                return user; // Substituir por token (exemplo: JWT)
+            } else {
+                throw new CustomException("Credenciais inválidas!", "INVALID_CREDENTIALS");
+            }
+        }
+
+        throw new CustomException("Usuário não encontrado com o email: " + email, "USER_NOT_FOUND");
     }
 
     /**

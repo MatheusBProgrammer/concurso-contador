@@ -1,11 +1,17 @@
 package com.studyapp.studytracker.controller;
 
+import com.studyapp.studytracker.dto.ExamDto;
+import com.studyapp.studytracker.dto.LoginRequest;
+import com.studyapp.studytracker.dto.SubjectDto;
+import com.studyapp.studytracker.dto.UserResponseDto;
 import com.studyapp.studytracker.model.User;
 import com.studyapp.studytracker.service.UserService;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -20,18 +26,47 @@ public class UserController {
     }
 
     /**
-     * Endpoint para criar um novo usuário
-     *
-     * @param user Objeto User contendo os dados do novo usuário
-     * @return ResponseEntity com o usuário criado
+     * Endpoint para criar um novo usuário.
      */
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        // Chama o serviço para criar um novo usuário
         User createdUser = userService.createUser(user);
-        // Retorna o usuário criado com o código HTTP 201 (Created)
         return ResponseEntity.status(201).body(createdUser);
     }
+
+    /**
+     * Endpoint para login de usuário.
+     */
+@PostMapping("/login")
+public ResponseEntity<UserResponseDto> login(@RequestBody LoginRequest loginRequest) {
+    // Autenticar o usuário
+    User user = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
+
+    // Converter os exames de Exam para ExamDto
+    List<ExamDto> examDtos = user.getExams().stream()
+        .map(exam -> new ExamDto(
+            exam.getExamId(),
+            exam.getName(),
+            exam.getSubjects().stream()
+                .map(subject -> new SubjectDto(
+                    subject.getSubjectId(),
+                    subject.getName(),
+                    subject.getWeight()
+                )).toList(),
+            exam.getTotalWeight()
+        )).toList();
+
+    // Construir o UserResponseDto
+    UserResponseDto userResponse = new UserResponseDto(
+        user.getId(),
+        user.getName(),
+        user.getEmail(),
+        examDtos
+    );
+
+    // Retornar o DTO sem expor a senha
+    return ResponseEntity.ok(userResponse);
+}
 
     /**
      * Endpoint para buscar um usuário por ID

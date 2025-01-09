@@ -1,10 +1,14 @@
 package com.studyapp.studytracker.controller;
 
 import com.studyapp.studytracker.dto.ExamDto;
+import com.studyapp.studytracker.dto.SubjectDto;
 import com.studyapp.studytracker.model.Exam;
+import com.studyapp.studytracker.model.Subject;
 import com.studyapp.studytracker.model.User;
 import com.studyapp.studytracker.service.ExamService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/exams")
@@ -19,7 +23,7 @@ public class ExamController {
 
     /**
      * Adiciona um exame para um usuário.
-     * 
+     *
      * @param userId ID do usuário
      * @param examDto DTO contendo os dados do exame
      * @return Usuário atualizado com o novo exame
@@ -32,7 +36,7 @@ public class ExamController {
 
     /**
      * Remove um exame de um usuário.
-     * 
+     *
      * @param userId ID do usuário
      * @param examId ID do exame
      * @return Usuário atualizado após a remoção
@@ -44,7 +48,7 @@ public class ExamController {
 
     /**
      * Converte o DTO de Exam para o modelo de domínio.
-     * 
+     *
      * @param examDto Objeto DTO do exame
      * @return Objeto modelo de Exam
      */
@@ -52,7 +56,21 @@ public class ExamController {
         Exam exam = new Exam();
         exam.setName(examDto.getName());
         exam.setTotalWeight(examDto.getTotalWeight());
-        exam.setSubjects(examDto.getSubjects());
+
+        // Converte a lista de SubjectDto para Subject
+        if (examDto.getSubjects() != null) {
+            exam.setSubjects(
+                examDto.getSubjects().stream()
+                        .map(subjectDto -> {
+                            Subject subject = new Subject();
+                            subject.setSubjectId(subjectDto.getSubjectId());
+                            subject.setName(subjectDto.getName());
+                            subject.setWeight(subjectDto.getWeight());
+                            return subject;
+                        })
+                        .collect(Collectors.toList())
+            );
+        }
         return exam;
     }
 }
