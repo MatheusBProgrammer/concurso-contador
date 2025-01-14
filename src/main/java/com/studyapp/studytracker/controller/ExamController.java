@@ -1,7 +1,6 @@
 package com.studyapp.studytracker.controller;
 
 import com.studyapp.studytracker.dto.ExamDto;
-import com.studyapp.studytracker.dto.SubjectDto;
 import com.studyapp.studytracker.model.Exam;
 import com.studyapp.studytracker.model.Subject;
 import com.studyapp.studytracker.model.User;
@@ -24,7 +23,7 @@ public class ExamController {
     /**
      * Adiciona um exame para um usuário.
      *
-     * @param userId ID do usuário
+     * @param userId  ID do usuário
      * @param examDto DTO contendo os dados do exame
      * @return Usuário atualizado com o novo exame
      */
@@ -60,17 +59,32 @@ public class ExamController {
         // Converte a lista de SubjectDto para Subject
         if (examDto.getSubjects() != null) {
             exam.setSubjects(
-                examDto.getSubjects().stream()
-                        .map(subjectDto -> {
-                            Subject subject = new Subject();
-                            subject.setSubjectId(subjectDto.getSubjectId());
-                            subject.setName(subjectDto.getName());
-                            subject.setWeight(subjectDto.getWeight());
-                            return subject;
-                        })
-                        .collect(Collectors.toList())
-            );
+                    examDto.getSubjects().stream()
+                            .map(subjectDto -> {
+                                Subject subject = new Subject();
+                                subject.setSubjectId(subjectDto.getSubjectId());
+                                subject.setName(subjectDto.getName());
+                                subject.setWeight(subjectDto.getWeight());
+                                return subject;
+                            })
+                            .collect(Collectors.toList()));
         }
         return exam;
+    }
+
+    /**
+     * Atualiza um exame de um usuário (edição de nome, totalWeight, etc.).
+     *
+     * @param userId  ID do usuário
+     * @param examId  ID do exame
+     * @param examDto DTO com os campos atualizados
+     * @return Usuário atualizado após a edição do exame
+     */
+    @PutMapping("/{userId}/{examId}")
+    public User updateExam(@PathVariable String userId,
+            @PathVariable String examId,
+            @RequestBody ExamDto examDto) {
+        Exam updatedExam = convertToModel(examDto);
+        return examService.updateExam(userId, examId, updatedExam);
     }
 }

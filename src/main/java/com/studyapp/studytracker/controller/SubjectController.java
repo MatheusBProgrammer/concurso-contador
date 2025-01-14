@@ -33,11 +33,11 @@ public class SubjectController {
     }
 
     /**
-     * Atualizar o tempo total de estudo para uma disciplina.
+     * Atualizar o tempo total de estudo para uma disciplina (em SEGUNDOS).
      * @param userId ID do usuário
      * @param examId ID da prova
      * @param subjectId ID da disciplina
-     * @param additionalTime Tempo adicional de estudo (em horas)
+     * @param additionalTime Tempo adicional de estudo (em segundos)
      * @return Usuário atualizado com o tempo de estudo ajustado
      */
     @PatchMapping("/{userId}/{examId}/{subjectId}/study-time")
@@ -50,11 +50,11 @@ public class SubjectController {
     }
 
     /**
-     * Atualizar o tempo de estudo diário para uma disciplina.
+     * Atualizar o tempo de estudo diário para uma disciplina (em SEGUNDOS).
      * @param userId ID do usuário
      * @param examId ID da prova
      * @param subjectId ID da disciplina
-     * @param additionalTime Tempo adicional de estudo diário (em horas)
+     * @param additionalTime Tempo adicional de estudo diário (em segundos)
      * @return Usuário atualizado com o tempo de estudo diário ajustado
      */
     @PatchMapping("/{userId}/{examId}/{subjectId}/daily-study-time")
@@ -64,6 +64,26 @@ public class SubjectController {
             @PathVariable String subjectId,
             @RequestParam double additionalTime) {
         return subjectService.addDailyStudyTime(userId, examId, subjectId, additionalTime);
+    }
+
+    /**
+     * Editar uma disciplina (nome, peso, meta, etc.).
+     * @param userId ID do usuário
+     * @param examId ID da prova
+     * @param subjectId ID da disciplina
+     * @param subjectDto Campos que devem ser atualizados
+     * @return Usuário atualizado após a edição da disciplina
+     */
+    @PutMapping("/{userId}/{examId}/{subjectId}")
+    public User updateSubject(
+            @PathVariable String userId,
+            @PathVariable String examId,
+            @PathVariable String subjectId,
+            @RequestBody SubjectDto subjectDto) {
+        // Converte o DTO para o modelo "Subject"
+        Subject updatedSubject = convertToModel(subjectDto);
+        // Chamamos o método de serviço para atualizar
+        return subjectService.updateSubject(userId, examId, subjectId, updatedSubject);
     }
 
     /**
@@ -80,13 +100,33 @@ public class SubjectController {
 
     /**
      * Método privado para converter um DTO para o modelo de disciplina.
-     * @param subjectDto Dados da disciplina
-     * @return Objeto Subject (modelo)
+     * Note que aqui estamos apenas convertendo o que faz sentido na adição/edição.
+     * Caso seja necessário atualizar studyTime e dailyStudyTime diretamente,
+     * você pode ajustar este método conforme desejado.
      */
     private Subject convertToModel(SubjectDto subjectDto) {
         Subject subject = new Subject();
         subject.setName(subjectDto.getName());
         subject.setWeight(subjectDto.getWeight());
+        subject.setStudyGoal(subjectDto.getStudyGoal());
+        // Caso queira permitir a edição de studyTime/dailyStudyTime diretamente:
+        // subject.setStudyTime(subjectDto.getStudyTime());
+        // subject.setDailyStudyTime(subjectDto.getDailyStudyTime());
         return subject;
     }
+    /**
+ * Remover uma disciplina de uma prova.
+ * @param userId ID do usuário
+ * @param examId ID da prova
+ * @param subjectId ID da disciplina
+ * @return Usuário atualizado após a remoção da disciplina
+ */
+@DeleteMapping("/{userId}/{examId}/{subjectId}")
+public User removeSubject(
+        @PathVariable String userId,
+        @PathVariable String examId,
+        @PathVariable String subjectId) {
+    return subjectService.removeSubject(userId, examId, subjectId);
+}
+
 }

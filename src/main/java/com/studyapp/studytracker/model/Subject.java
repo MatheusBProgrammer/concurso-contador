@@ -12,6 +12,7 @@ public class Subject {
     private double globalImportance;
     private double studyTime;
     private double dailyStudyTime;
+    private double studyGoal;
 
     // Getters e Setters
     public String getSubjectId() {
@@ -68,5 +69,13 @@ public class Subject {
 
     public void setDailyStudyTime(double dailyStudyTime) {
         this.dailyStudyTime = dailyStudyTime;
+    }
+
+    public double getStudyGoal() {
+        return studyGoal;
+    }
+
+    public void setStudyGoal(double studyGoal) {
+        this.studyGoal = studyGoal;
     }
 }

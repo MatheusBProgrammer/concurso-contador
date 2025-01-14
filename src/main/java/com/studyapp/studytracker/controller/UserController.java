@@ -12,7 +12,6 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -37,36 +36,40 @@ public class UserController {
     /**
      * Endpoint para login de usuário.
      */
-@PostMapping("/login")
-public ResponseEntity<UserResponseDto> login(@RequestBody LoginRequest loginRequest) {
-    // Autenticar o usuário
-    User user = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
+    @PostMapping("/login")
+    public ResponseEntity<UserResponseDto> login(@RequestBody LoginRequest loginRequest) {
+        // Autenticar o usuário
+        User user = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
 
-    // Converter os exames de Exam para ExamDto
-    List<ExamDto> examDtos = user.getExams().stream()
-        .map(exam -> new ExamDto(
-            exam.getExamId(),
-            exam.getName(),
-            exam.getSubjects().stream()
-                .map(subject -> new SubjectDto(
-                    subject.getSubjectId(),
-                    subject.getName(),
-                    subject.getWeight()
-                )).toList(),
-            exam.getTotalWeight()
-        )).toList();
+        // Converter os exames de Exam para ExamDto
+        List<ExamDto> examDtos = user.getExams().stream()
+                .map(exam -> new ExamDto(
+                        exam.getExamId(),
+                        exam.getName(),
+                        exam.getSubjects().stream()
+                                .map(subject -> new SubjectDto(
+                                        subject.getSubjectId(),
+                                        subject.getName(),
+                                        subject.getWeight(),
+                                        subject.getRelativeImportance(),
+                                        subject.getGlobalImportance(),
+                                        subject.getStudyTime(),
+                                        subject.getDailyStudyTime(),
+                                        subject.getStudyGoal()))
+                                .toList(),
+                        exam.getTotalWeight()))
+                .toList();
 
-    // Construir o UserResponseDto
-    UserResponseDto userResponse = new UserResponseDto(
-        user.getId(),
-        user.getName(),
-        user.getEmail(),
-        examDtos
-    );
+        // Construir o UserResponseDto
+        UserResponseDto userResponse = new UserResponseDto(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                examDtos);
 
-    // Retornar o DTO sem expor a senha
-    return ResponseEntity.ok(userResponse);
-}
+        // Retornar o DTO sem expor a senha
+        return ResponseEntity.ok(userResponse);
+    }
 
     /**
      * Endpoint para buscar um usuário por ID

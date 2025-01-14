@@ -10,9 +10,9 @@ public class Exam {
 
     @Id
     private String examId; // Identificador único do exame
-    private String name; // Nome da prova
+    private String name;   // Nome da prova
     private List<Subject> subjects; // Lista de matérias relacionadas à prova
-    private double totalWeight; // Peso total da prova (exemplo: para média final)
+    private double totalWeight;     // Peso total da prova (exemplo: para média final)
 
     // Getters e Setters
     public String getExamId() {
